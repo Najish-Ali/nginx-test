@@ -39,7 +39,7 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build -f Dockerfile --no-cache -t nginx:latest .
+          docker build -t nginx:latest .
 
       - name: Push Docker Image
         run: |
