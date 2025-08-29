@@ -38,11 +38,11 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build . -t mynginx
+          docker build . -t ali-nginx
 
       - name: Push Docker Image
         run: |
-          docker push sayyednajish/mynginx:latest 
+          docker push sayyednajish/ali-nginx
 
 
   deploy:
@@ -88,12 +88,12 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
           set -e
           # Pull the latest Docker image
-          docker pull sayyednajish/nginx:latest
+          docker pull sayyednajish/ali-nginx:latest
 
           # Run the new container
           docker run -d \
             --name nginx \
             -p 80:80 \
-            sayyednajish/mynginx:latest
+            sayyednajish/ali-nginx:latest
 
           EOF
