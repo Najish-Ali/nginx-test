@@ -1,0 +1,115 @@
+name: Build, Dockerize, Deploy
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out your repository
+        uses: actions/checkout@v2
+
+
+      - name: Install dependencies
+        run: |
+            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+            unzip awscliv2.zip
+            sudo ./aws/install
+
+
+      - name: Archive static files from dist
+        run: |
+          if [ -f "index.html" ]; then
+            echo "Found index.html file"
+          else
+            echo "index.html file not found in dist"
+            exit 1
+          fi
+
+          # Now create the archive from the dist folder
+          tar -czf static-files.tar.gz -C index.html
+
+      - name: Upload static files archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: static-files
+          path: static-files.tar.gz
+
+  dockerize:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Navigate to Repository
+        run: cd .
+
+        
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_USERNAME }}
+          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+
+      - name: Build Docker Image
+        run: |
+          docker build -f Dockerfile --no-cache -t nginx:latest .
+
+      - name: Push Docker Image
+        run: |
+          docker push sayyednajish/nodejs:latest 
+
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download static files
+        uses: actions/download-artifact@v4
+        with:
+          name: static-files
+          path: .
+
+      - name: Install sshpass and OpenSSH
+        run: |
+          sudo apt-get install -y sshpass openssh-client
+
+      - name: Set up SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_PEM_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: Deploy static files to EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+          set -e
+          # Navigate to deployment directory
+          cd /home/ubuntu/test/
+
+          # Extract new files with minimal resource usage
+          tar -xzf static-files.tar.gz
+
+          # Restart nginx server
+          systemctl restart nginx
+
+          # Clean up tarball and backup files
+          rm static-files.tar.gz
+          EOF
+
+      - name: Deploy Dockerized Application
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
+          set -e
+          # Pull the latest Docker image
+          docker pull sayyednajish/nginx:latest
+
+          # Run the new container
+          docker run -d \
+            --name nginx \
+            -p 80:80 \
+            sayyednajish/nginx:latest
+
+          EOF
