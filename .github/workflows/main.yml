@@ -42,7 +42,7 @@ jobs:
 
       - name: Push Docker Image
         run: |
-          docker push sayyednajish/ali-nginx
+          docker push sayyednajish/nginx:latest
 
 
   deploy:
