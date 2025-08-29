@@ -84,6 +84,6 @@ jobs:
           docker pull sayyednajish/nginx:latest
 
           # Run the new container
-          docker run -d --name test_nginx -p 8080:80 sayyednajish/nginx:latest
+          docker run -d --name nova_nginx -p 8081:80 sayyednajish/nginx:latest
 
           EOF
