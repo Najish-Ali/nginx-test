@@ -81,12 +81,12 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'EOF'
           set -e
           # Pull the latest Docker image
-          docker pull sayyednajish/ali-nginx:latest
+          docker pull sayyednajish/nginx:latest
 
           # Run the new container
           docker run -d \
             --name nginx \
             -p 80:80 \
-            sayyednajish/ali-nginx:latest
+            sayyednajish/nginx:latest
 
           EOF
