@@ -39,11 +39,11 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build -t nginx:latest .
+          docker build . -t mynginx
 
       - name: Push Docker Image
         run: |
-          docker push sayyednajish/nodejs:latest 
+          docker push sayyednajish/mynginx:latest 
 
 
   deploy:
@@ -95,6 +95,6 @@ jobs:
           docker run -d \
             --name nginx \
             -p 80:80 \
-            sayyednajish/nginx:latest
+            sayyednajish/mynginx:latest
 
           EOF
