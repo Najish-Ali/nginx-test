@@ -14,13 +14,13 @@ jobs:
       - name: Archive static file
         run: |
           # Now create the archive from the dist folder
-          tar -czf static-files.tar.gz -C index.html
+          tar -czvf static-files.tar index.html
 
       - name: Upload static files archive
         uses: actions/upload-artifact@v4
         with:
           name: static-files
-          path: static-files.tar.gz
+          path: static-files.tar
 
   dockerize:
     needs: build
@@ -75,13 +75,13 @@ jobs:
           cd /home/ubuntu/test/
 
           # Extract new files with minimal resource usage
-          tar -xzf static-files.tar.gz
+          tar -xzf static-files.tar
 
           # Restart nginx server
           systemctl restart nginx
 
           # Clean up tarball and backup files
-          rm static-files.tar.gz
+          rm static-files.tar
           EOF
 
       - name: Deploy Dockerized Application
