@@ -11,14 +11,6 @@ jobs:
       - name: Check out your repository
         uses: actions/checkout@v2
 
-
-      - name: Install dependencies
-        run: |
-            curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-            unzip awscliv2.zip
-            sudo ./aws/install
-
-
       - name: Archive static files from dist
         run: |
           if [ -f "index.html" ]; then
